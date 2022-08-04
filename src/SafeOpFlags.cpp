@@ -318,15 +318,15 @@ SafeOpFlags::to_string(enum eBinaryOps op) const
 		case eMul: s = "safe_mul_"; break;
 		case eMod: s = "safe_mod_"; break;
 		case eDiv: s = "safe_div_"; break;
-		case eLShift: s = "safe_lshift_"; break;
-		case eRShift: s = "safe_rshift_"; break;
+		// case eLShift: s = "safe_lshift_"; break;
+		// case eRShift: s = "safe_rshift_"; break;
 		default: break;
 	}
 	ostringstream oss;
 	OutputFuncOrMacro(oss);
 	OutputSize(oss);
 	OutputOp1(oss);
-	(op == eLShift || op == eRShift) ? OutputOp2(oss) : OutputOp1(oss);
+	(false/* op == eLShift || op == eRShift */) ? OutputOp2(oss) : OutputOp1(oss);
 	s += oss.str();
 	return s;
 }

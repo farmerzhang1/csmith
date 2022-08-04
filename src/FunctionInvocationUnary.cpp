@@ -247,9 +247,9 @@ FunctionInvocationUnary::Output(std::ostream &out) const
 		OutputStandardFuncName(eFunc, out);
 		// explicit type casting for op1
 		if (need_cast) {
-			out << "(";
-			op_flags->OutputSize(out);
-			out << ")";
+			// out << "(";
+			// op_flags->OutputSize(out);
+			// out << ")";
 		}
 		param_value[0]->Output(out);
 		break;
@@ -271,6 +271,7 @@ FunctionInvocationUnary::indented_output(std::ostream &out, int indent) const
 
 	case eMinus:
 		if (CGOptions::avoid_signed_overflow()) {
+			out << "/* test avoid */\n";
 			out << op_flags->to_string(eFunc);
 			output_open_encloser("(", out, indent);
 			param_value[0]->indented_output(out, indent);

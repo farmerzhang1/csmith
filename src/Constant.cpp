@@ -133,7 +133,7 @@ GenerateRandomIntConstant(void)
 	if (CGOptions::binary_constant() && rnd_flipcoin(pBinaryConstProb)) {
 		val = string("0b") + HexToBinary(RandomHexDigits( 8 ));
 	} else if (CGOptions::ccomp() || !CGOptions::longlong())
-		val = "0x" + RandomHexDigits( 8 );
+		val = "0x0" + RandomHexDigits( 7 );
 	else
 		val = "0x" + RandomHexDigits( 8 ) + "L";
 
@@ -385,14 +385,14 @@ GenerateRandomConstant(const Type* type)
 				if (!CGOptions::longlong()) {
 					oss << (unsigned int)num;
 				} else {
-					oss << ((type->simple_type == eULong) ? (unsigned long)num : (unsigned INT64)num);
+					oss << ((type->simple_type == eULong) ? (unsigned int)num : (unsigned int)num);
 				}
 				break;
 			case eFloat:
 				oss << GenerateSmallRandomFloatHexConstant(num);
 				break;
 			default:
-				oss << num;
+				oss << (short) num;
 				break;
 			}
 			if (type->simple_type == eFloat) {
@@ -400,9 +400,9 @@ GenerateRandomConstant(const Type* type)
 			}
 			else {
 				if (CGOptions::ccomp() || !CGOptions::longlong())
-					v = oss.str() + (type->is_signed() ? "" : "U");
+					v = oss.str() + (type->is_signed() ? "" : "");
 				else
-					v = oss.str() + (type->is_signed() ? "L" : "UL");
+					v = oss.str() + (type->is_signed() ? "" : "");
 			}
 		} else {
 		    switch (st) {
@@ -410,16 +410,16 @@ GenerateRandomConstant(const Type* type)
 			case eChar:      v = GenerateRandomCharConstant();		break;
 			case eInt:       v = GenerateRandomIntConstant();		break;
 			case eShort:     v = GenerateRandomShortConstant();		break;
-			case eLong:      v = GenerateRandomLongConstant();		break;
-			case eLongLong:  v = GenerateRandomLongLongConstant();		break;
+			case eLong:      v = GenerateRandomIntConstant();		break;
+			case eLongLong:  v = GenerateRandomIntConstant();		break;
 			case eUChar:     v = GenerateRandomCharConstant();		break;
 			case eUInt:      v = GenerateRandomIntConstant();		break;
 			case eUShort:    v = GenerateRandomShortConstant();		break;
-			case eULong:     v = GenerateRandomLongConstant();		break;
-			case eULongLong: v = GenerateRandomLongLongConstant();		break;
+			case eULong:     v = GenerateRandomIntConstant();		break;
+			case eULongLong: v = GenerateRandomIntConstant();		break;
 			case eFloat:     v = GenerateRandomFloatHexConstant();		break;
-			case eInt128:    v = GenerateRandomInt128Constant();		break;
-			case eUInt128:   v = GenerateRandomInt128Constant();		break;
+			case eInt128:    v = GenerateRandomIntConstant();		break;
+			case eUInt128:   v = GenerateRandomIntConstant();		break;
 			// case eDouble:    v = GenerateRandomFloatConstant();		break;
 			default:
 				assert(0 && "Unsupported type!");

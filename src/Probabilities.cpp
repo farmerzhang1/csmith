@@ -722,26 +722,26 @@ Probabilities::set_default_simple_types_prob()
 	}
 
 	SET_SINGLE_NAME("int_prob", Int, 1);
-	SET_SINGLE_NAME("short_prob", Short, 1);
+	SET_SINGLE_NAME("short_prob", Short, 0);
 
 	if (CGOptions::ccomp()) {
 		SET_SINGLE_NAME("long_prob", Long, 0);
 		SET_SINGLE_NAME("ulong_prob", ULong, 0);
 	}
 	else {
-		SET_SINGLE_NAME("long_prob", Long, 1);
-		SET_SINGLE_NAME("ulong_prob", ULong, 1);
+		SET_SINGLE_NAME("long_prob", Long, 0);
+		SET_SINGLE_NAME("ulong_prob", ULong, 0);
 	}
 
 	if (CGOptions::uint8()) {
-		SET_SINGLE_NAME("uchar_prob", UChar, 1);
+		SET_SINGLE_NAME("uchar_prob", UChar, 0);
 	}
 	else {
 		SET_SINGLE_NAME("uchar_prob", UChar, 0);
 	}
 
-	SET_SINGLE_NAME("uint_prob", UInt, 1);
-	SET_SINGLE_NAME("ushort_prob", UShort, 1);
+	SET_SINGLE_NAME("uint_prob", UInt, 0);
+	SET_SINGLE_NAME("ushort_prob", UShort, 0);
 
 	if (CGOptions::allow_int64()) {
 		SET_SINGLE_NAME("long_long_prob", LongLong, 1);
@@ -776,7 +776,7 @@ void Probabilities::set_default_unary_ops_prob()
 	}
 
 	SET_SINGLE_NAME("unary_minus_prob", Minus, 1);
-	SET_SINGLE_NAME("unary_not_prob", Not, 1);
+	SET_SINGLE_NAME("unary_not_prob", Not, 0);
 	SET_SINGLE_NAME("unary_bit_not_prob", BitNot, 1);
 
 	set_group_prob(true, pUnaryOpsProb, m);
@@ -807,19 +807,19 @@ Probabilities::set_default_binary_ops_prob()
 	}
 
 	SET_SINGLE_NAME("binary_mod_prob", Mod, 1);
-	SET_SINGLE_NAME("binary_gt_prob", CmpGt, 1);
-	SET_SINGLE_NAME("binary_lt_prob", CmpLt, 1);
-	SET_SINGLE_NAME("binary_ge_prob", CmpGe, 1);
-	SET_SINGLE_NAME("binary_le_prob", CmpLe, 1);
-	SET_SINGLE_NAME("binary_eq_prob", CmpEq, 1);
-	SET_SINGLE_NAME("binary_ne_prob", CmpNe, 1);
-	SET_SINGLE_NAME("binary_and_prob", And, 1);
-	SET_SINGLE_NAME("binary_or_prob", Or, 1);
-	SET_SINGLE_NAME("binary_bit_xor_prob", BitXor, 1);
-	SET_SINGLE_NAME("binary_bit_and_prob", BitAnd, 1);
-	SET_SINGLE_NAME("binary_bit_or_prob", BitOr, 1);
-	SET_SINGLE_NAME("binary_bit_rshift_prob", RShift, 1);
-	SET_SINGLE_NAME("binary_bit_lshift_prob", LShift, 1);
+	SET_SINGLE_NAME("binary_gt_prob", CmpGt, 0);
+	SET_SINGLE_NAME("binary_lt_prob", CmpLt, 0);
+	SET_SINGLE_NAME("binary_ge_prob", CmpGe, 0);
+	SET_SINGLE_NAME("binary_le_prob", CmpLe, 0);
+	SET_SINGLE_NAME("binary_eq_prob", CmpEq, 0);
+	SET_SINGLE_NAME("binary_ne_prob", CmpNe, 0);
+	// SET_SINGLE_NAME("binary_and_prob", And, 1);
+	// SET_SINGLE_NAME("binary_or_prob", Or, 1);
+	// SET_SINGLE_NAME("binary_bit_xor_prob", BitXor, 1);
+	// SET_SINGLE_NAME("binary_bit_and_prob", BitAnd, 1);
+	// SET_SINGLE_NAME("binary_bit_or_prob", BitOr, 1);
+	// SET_SINGLE_NAME("binary_bit_rshift_prob", RShift, 1);
+	// SET_SINGLE_NAME("binary_bit_lshift_prob", LShift, 1);
 
 	set_group_prob(true, pBinaryOpsProb, m);
 	set_prob_filter(pBinaryOpsProb);

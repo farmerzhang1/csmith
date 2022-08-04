@@ -1754,7 +1754,7 @@ Type::Output(std::ostream &out) const
 	switch (eType) {
 	case eSimple:
 		if (this->simple_type == eVoid) {
-			out << "void";
+			out << "";
 		} else if (this->simple_type == eFloat) {
 		        out << "float";
 		} else if (this->simple_type == eInt128) {
@@ -1762,9 +1762,10 @@ Type::Output(std::ostream &out) const
 		} else if (this->simple_type == eUInt128) {
 			out << "unsigned __int" << (SizeInBytes() * 8);
 		} else {
-			out << (is_signed() ? "int" : "uint");
-			out << (SizeInBytes() * 8);
-			out << "_t";
+			// out << (is_signed() ? "int" : "uint");
+			// out << (SizeInBytes() * 8);
+			// out << "_t";
+			out << "int";
 		}
 		break;
 	case ePointer:   ptr_type->Output( out ); out << "*"; break;

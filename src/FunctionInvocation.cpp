@@ -227,7 +227,7 @@ FunctionInvocation::make_random_binary(CGContext &cg_context, const Type* type)
 		Effect rhs_eff_accum;
 
 		CGContext rhs_cg_context(cg_context, rhs_eff_context, &rhs_eff_accum);
-		if (op == eLShift || op == eRShift) {
+		if (false) {
 			eTermType tt = MAX_TERM_TYPES;
 			bool not_constant = rnd_flipcoin(ShiftByNonConstantProb);
 			// avoid shifting negative or too much
@@ -243,7 +243,7 @@ FunctionInvocation::make_random_binary(CGContext &cg_context, const Type* type)
 			if ((op == eMod || op == eDiv) && (rhs->equals(0) || rhs->is_0_or_1()) &&
 				!lhs_type->is_float() && !rhs_type->is_float()) {
 				VectorFilter f;
-				f.add(eMod).add(eDiv).add(eLShift).add(eRShift);
+				f.add(eMod).add(eDiv); // .add(eLShift).add(eRShift);
 				op = (eBinaryOps)(rnd_upto(MAX_BINARY_OP, &f));
 				fi->set_operation(op);
 			}
@@ -628,7 +628,7 @@ FunctionInvocation::~FunctionInvocation(void)
 bool
 FunctionInvocation::IsOrderedStandardFunc(eBinaryOps eFunc)
 {
-	return ((eFunc == eAnd) || (eFunc == eOr));
+	return false ; // ((eFunc == eAnd) || (eFunc == eOr));
 }
 
 /*
@@ -642,12 +642,12 @@ FunctionInvocation::BinaryOpWorksForFloat(eBinaryOps op)
 		case eSub:
 		case eMul:
 		case eDiv:
-		case eCmpGt:
-		case eCmpLt:
-		case eCmpGe:
-		case eCmpLe:
-		case eCmpEq:
-		case eCmpNe: // fall-through
+		// case eCmpGt:
+		// case eCmpLt:
+		// case eCmpGe:
+		// case eCmpLe:
+		// case eCmpEq:
+		// case eCmpNe: // fall-through
 			return true;
 		default:
 			return false;

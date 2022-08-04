@@ -579,13 +579,13 @@ ArrayVariable::Output(std::ostream &out) const
 				out << "[";
 				const Type* t = &(indices[i]->get_type());
 				// cast signed variable to it's corresponding unsigned type, just in case we get a negative index
-				if (t->is_signed()) {
-					const Type* unsigned_type = t->to_unsigned();
-					assert(unsigned_type);
-					out << "(";
-					unsigned_type->Output(out);
-					out << ")";
-				}
+				// if (t->is_signed()) {
+				// 	const Type* unsigned_type = t->to_unsigned();
+				// 	assert(unsigned_type);
+				// 	out << "(";
+				// 	unsigned_type->Output(out);
+				// 	out << ")";
+				// }
 				out << "(";
 				indices[i]->Output(out);
 				out << ") % " << sizes[i] << "]";
@@ -657,27 +657,20 @@ ArrayVariable::output_init(std::ostream &out, const Expression* init, const vect
 {
 	if (collective != 0) return;
 	size_t i;
-
+	out << "/* output init */\n";
 	for (i=0; i<get_dimension(); i++) {
-		if (i > 0) {
-			output_tab(out, indent);
-			out << "{";
-			outputln(out);
-			indent++;
-		}
+		// if (i > 0) {
+		// 	output_tab(out, indent);
+		// 	out << "{";
+		// 	outputln(out);
+		// 	indent++;
+		// }
 		output_tab(out, indent);
-		out << "for (";
 		out << cvs[i]->get_actual_name();
 		out << " = 0; ";
+		out << "while (";
 		out << cvs[i]->get_actual_name();
-		out << " < " << sizes[i] << "; ";
-		out << cvs[i]->get_actual_name();
-		if (CGOptions::post_incr_operator()) {
-			out << "++)";
-		}
-		else {
-			out << " = " << cvs[i]->get_actual_name() << " + 1)";
-		}
+		out << " < " << sizes[i] << ") {";
 		outputln(out);
 	}
 	output_tab(out, indent+1);
@@ -687,9 +680,16 @@ ArrayVariable::output_init(std::ostream &out, const Expression* init, const vect
 	out << ";";
 	outputln(out);
 	// output the closing bracelets
-	for (i=1; i<get_dimension(); i++) {
+	for (i=0; i<get_dimension(); i++) {
 		indent--;
 		output_tab(out, indent);
+		out << cvs[get_dimension()-1-i]->get_actual_name();
+		if (CGOptions::post_incr_operator()) {
+			out << "++";
+		}
+		else {
+			out << " = " << cvs[get_dimension()-1-i]->get_actual_name() << " + 1;";
+		}
 		out << "}";
 		outputln(out);
 	}
@@ -702,6 +702,7 @@ ArrayVariable::output_addr_checks(std::ostream &out, const Variable* var, string
 	size_t i;
 	vector<const Variable *> &ctrl_vars = Variable::get_new_ctrl_vars();
 	// declare control variables
+	out << " /* output addr check */\n";
 	OutputArrayCtrlVars(ctrl_vars, out, get_dimension(), indent);
 	for (i=0; i<get_dimension(); i++) {
 		output_tab(out, indent);
@@ -801,20 +802,15 @@ ArrayVariable::hash(std::ostream& out) const
 	//ISSUE: ugly hack to make sure we use the latest ctrl_vars, which is generated
 	// from the call of OutputArrayInitializers in OutputMgr.cpp
 	const vector<const Variable*>& cvs = Variable::get_last_ctrl_vars();
+		out << " /* output hash */\n";
+
 	for (i=0; i<get_dimension(); i++) {
 		output_tab(out, indent);
-		out << "for (";
 		out << cvs[i]->get_actual_name();
 		out << " = 0; ";
+		out << "while (";
 		out << cvs[i]->get_actual_name();
-		out << " < " << sizes[i] << "; ";
-		out << cvs[i]->get_actual_name();
-		if (CGOptions::post_incr_operator()) {
-			out << "++)";
-		}
-		else {
-			out << " = " << cvs[i]->get_actual_name() << " + 1)";
-		}
+		out << " < " << sizes[i] << ")";
 		outputln(out);
 		output_open_encloser("{", out, indent);
 	}
@@ -851,6 +847,13 @@ ArrayVariable::hash(std::ostream& out) const
 	}
 	// output the closing bracelets
 	for (i=0; i<get_dimension(); i++) {
+		out << cvs[get_dimension() - 1 - i]->get_actual_name();
+		if (CGOptions::post_incr_operator()) {
+			out << "++;\n";
+		}
+		else {
+			out << " = " << cvs[get_dimension() - 1 - i]->get_actual_name() << " + 1;\n";
+		}
 		output_close_encloser("}", out, indent);
 	}
 	outputln(out);

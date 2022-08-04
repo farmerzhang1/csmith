@@ -70,7 +70,7 @@ enum eUnaryOps
 	ePostDec
 #endif // 0
 };
-#define MAX_UNARY_OP ((eUnaryOps) (eBitNot+1))
+#define MAX_UNARY_OP ((eUnaryOps) (eNot+1))
 #if 0 // TODO --- to be implemented
 #  define MAX_UNARY_OP ((eUnaryOps) (ePostDec+1))
 #endif
@@ -87,16 +87,16 @@ enum eBinaryOps
 	eCmpGe,
 	eCmpLe,
 	eCmpEq,
-	eCmpNe,
-	eAnd,
-	eOr,
-	eBitXor,
-	eBitAnd,
-	eBitOr,
-	eRShift,
-	eLShift
+	eCmpNe
+	// eAnd,
+	// eOr,
+	// eBitXor,
+	// eBitAnd,
+	// eBitOr,
+	// eRShift,
+	// eLShift
 };
-#define MAX_BINARY_OP ((eBinaryOps) (eLShift+1))
+#define MAX_BINARY_OP ((eBinaryOps) (eMul+1))
 
 enum eInvocationType
 {

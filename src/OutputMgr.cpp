@@ -285,28 +285,28 @@ OutputMgr::OutputHeader(int argc, char *argv[], unsigned long seed)
 	}
 
 	if (!CGOptions::longlong()) {
-		out << endl;
-		out << "#define NO_LONGLONG" << std::endl;
-		out << endl;
+		// out << endl;
+		// out << "#define NO_LONGLONG" << std::endl;
+		// out << endl;
 	}
 	if (CGOptions::enable_float()) {
-		out << "#include <float.h>\n";
-		out << "#include <math.h>\n";
+		// out << "#include <float.h>\n";
+		// out << "#include <math.h>\n";
 	}
 
 	ExtensionMgr::OutputHeader(out);
 
-	out << runtime_include << endl;
+	// out << runtime_include << endl;
 
  	if (!CGOptions::compute_hash()) {
 		if (CGOptions::allow_int64())
 			out << "volatile uint64_t " << Variable::sink_var_name << " = 0;" << endl;
 		else
-			out << "volatile uint32_t " << Variable::sink_var_name << " = 0;" << endl;
+			out << "int " << Variable::sink_var_name << " = 0;" << endl;
 	}
 	out << endl;
 
-	out << "static long __undefined;" << endl;
+	// out << "static long __undefined;" << endl;
 	out << endl;
 
 	if (CGOptions::depth_protect()) {

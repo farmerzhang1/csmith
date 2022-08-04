@@ -28,7 +28,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include "StatementFor.h"
@@ -76,48 +76,56 @@ make_random_loop_control(int &init, int &limit, int &incr,
 	// We don't have to put error guards here because we are trying
 	// to get pure random numbers, and in this case, we cannot get
 	// errors
-	init  = pure_rnd_flipcoin(50) ? 0 : (pure_rnd_upto(60)-30);
+	init = pure_rnd_flipcoin(50) ? 0 : (pure_rnd_upto(60) - 30);
 	limit = iv_signed ? (pure_rnd_upto(60) - 30) : (pure_rnd_upto(60) + 1);
 
-	eBinaryOps t_ops[] = { eCmpLt, eCmpLe, eCmpGt, eCmpGe, eCmpEq, eCmpNe };
-	test_op = t_ops[pure_rnd_upto(sizeof(t_ops)/sizeof(*t_ops))];
+	eBinaryOps t_ops[] = {eCmpLt, eCmpLe, eCmpGt, eCmpGe, eCmpEq, eCmpNe};
+	test_op = t_ops[pure_rnd_upto(sizeof(t_ops) / sizeof(*t_ops))];
 	ERROR_RETURN();
 
-	if (pure_rnd_flipcoin(50)) {
+	if (pure_rnd_flipcoin(50))
+	{
 		ERROR_RETURN();
 		// Do `+=' or `-=' by an increment between 0 and 9 inclusive.
 		// make sure the limit can be reached without wrap-around
 		incr = pure_rnd_upto(10);
-    // avoid an infinite loop due to inexact division, e.g,
-    // init = 0, limit = 3, step = 2, test_op = eCmpNe
-    if (test_op == eCmpNe && incr > 1)
-      limit = (limit - init) / incr * incr + init;
-    incr_op = (limit >= init) ? eAddAssign : eSubAssign;
-    if (incr == 0) incr = 1;
+		// avoid an infinite loop due to inexact division, e.g,
+		// init = 0, limit = 3, step = 2, test_op = eCmpNe
+		if (test_op == eCmpNe && incr > 1)
+			limit = (limit - init) / incr * incr + init;
+		incr_op = (limit >= init) ? eAddAssign : eSubAssign;
+		if (incr == 0)
+			incr = 1;
 
-    // A rare case that could cause wrap around: distance between init
-    // and limit is multiple of incr, and the incr goes to wrong direction.
-    // For example: init = 8, limit = 1, incr = -7. test_op is >=
-    if (CGOptions::fast_execution() && (limit - init) % incr == 0 && 
-      (test_op == eCmpGe || test_op == eCmpLe)) {
-      limit = (incr_op == eAddAssign) ? limit + 1 : limit - 1;
-    }
-	} else {
+		// A rare case that could cause wrap around: distance between init
+		// and limit is multiple of incr, and the incr goes to wrong direction.
+		// For example: init = 8, limit = 1, incr = -7. test_op is >=
+		if (CGOptions::fast_execution() && (limit - init) % incr == 0 &&
+			(test_op == eCmpGe || test_op == eCmpLe))
+		{
+			limit = (incr_op == eAddAssign) ? limit + 1 : limit - 1;
+		}
+	}
+	else
+	{
 		ERROR_RETURN();
 		// Do `++' or `--', pre- or post-.
 		// make sure the limit can be reached without wrap-around
-		if ((limit < init) || ((limit == init) && (test_op == eCmpGe))) {
+		if ((limit < init) || ((limit == init) && (test_op == eCmpGe)))
+		{
 			incr_op = pure_rnd_flipcoin(50) ? ePreDecr : ePostDecr;
-		} else {
+		}
+		else
+		{
 			incr_op = pure_rnd_flipcoin(50) ? ePreIncr : ePostIncr;
 		}
-		if (((incr_op == ePreIncr) && !CGOptions::pre_incr_operator())
-			|| ((incr_op == ePostIncr) && !CGOptions::post_incr_operator())) {
+		if (((incr_op == ePreIncr) && !CGOptions::pre_incr_operator()) || ((incr_op == ePostIncr) && !CGOptions::post_incr_operator()))
+		{
 
 			incr_op = eAddAssign;
 		}
-		if (((incr_op == ePreDecr) && !CGOptions::pre_decr_operator())
-			|| ((incr_op == ePostDecr) && !CGOptions::post_decr_operator())) {
+		if (((incr_op == ePreDecr) && !CGOptions::pre_decr_operator()) || ((incr_op == ePostDecr) && !CGOptions::post_decr_operator()))
+		{
 
 			incr_op = eSubAssign;
 		}
@@ -133,50 +141,61 @@ static unsigned int
 make_random_array_control(unsigned int bound, int &init, int &limit, int &incr, eBinaryOps &test_op, eAssignOps &incr_op, bool is_signed)
 {
 	// choose either increment or decrement
-    int oob_flipcoin = pure_rnd_flipcoin(CGOptions::array_oob_prob());
+	int oob_flipcoin = pure_rnd_flipcoin(CGOptions::array_oob_prob());
 	test_op = is_signed ? (rnd_flipcoin(50) ? eCmpLe : eCmpGe) : eCmpLe;
-	if (test_op == eCmpLe) {
-        init = oob_flipcoin ? -1000 : pure_rnd_flipcoin(50) ? 0 : pure_rnd_upto(bound/2);
+	if (test_op == eCmpLe)
+	{
+		init = oob_flipcoin ? -1000 : pure_rnd_flipcoin(50) ? 0
+															: pure_rnd_upto(bound / 2);
 		// increment, start near index 0
 		limit = bound;
 		incr_op = eAddAssign;
-		incr = pure_rnd_flipcoin(50) ? 1 : pure_rnd_upto(bound/4);
-		if (incr == 0) incr = 1;
+		incr = pure_rnd_flipcoin(50) ? 1 : pure_rnd_upto(bound / 4);
+		if (incr == 0)
+			incr = 1;
 		bound = ((bound - init) / incr) * incr + init;
-	} else {
+	}
+	else
+	{
 		// decrement, start near last index
-		init = pure_rnd_flipcoin(50) ? (bound) : (bound - pure_rnd_upto(bound/2));
-        limit = oob_flipcoin ? -1000 : pure_rnd_flipcoin(50) ? 0 : pure_rnd_upto(bound/2);
+		init = pure_rnd_flipcoin(50) ? (bound) : (bound - pure_rnd_upto(bound / 2));
+		limit = oob_flipcoin ? -1000 : pure_rnd_flipcoin(50) ? 0
+															 : pure_rnd_upto(bound / 2);
 		incr_op = eSubAssign;
-		incr = pure_rnd_flipcoin(50) ? 1 : pure_rnd_upto(bound/4);
-		if (incr == 0) incr = 1;
+		incr = pure_rnd_flipcoin(50) ? 1 : pure_rnd_upto(bound / 4);
+		if (incr == 0)
+			incr = 1;
 		bound = init;
 	}
-	Bookkeeper::oob_cnt = oob_flipcoin ? Bookkeeper::oob_cnt +1 : Bookkeeper::oob_cnt;
+	Bookkeeper::oob_cnt = oob_flipcoin ? Bookkeeper::oob_cnt + 1 : Bookkeeper::oob_cnt;
 	return bound;
 }
 
-const Variable*
-StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expression*& test, StatementAssign*& incr, unsigned int& bound)
+const Variable *
+StatementFor::make_iteration(CGContext &cg_context, StatementAssign *&init, Expression *&test, StatementAssign *&incr, unsigned int &bound)
 {
-	FactMgr* fm = get_fact_mgr(&cg_context);
+	FactMgr *fm = get_fact_mgr(&cg_context);
 	assert(fm);
-	Block* blk = cg_context.get_current_block();
+	Block *blk = cg_context.get_current_block();
 	assert(blk);
 
 	// save a copy of facts env and context
-	vector<const Fact*> facts_copy = fm->global_facts;
+	vector<const Fact *> facts_copy = fm->global_facts;
 	cg_context.get_effect_stm().clear();
 
 	// Select the loop control variable, avoid volatile
-	vector<const Variable*> invalid_vars;
+	vector<const Variable *> invalid_vars;
 	Variable *var = NULL;
-	do {
+	do
+	{
 		var = VariableSelector::SelectLoopCtrlVar(cg_context, invalid_vars);
 		ERROR_GUARD(NULL);
-		if (var->is_volatile()) {
+		if (var->is_volatile())
+		{
 			invalid_vars.push_back(var);
-		} else {
+		}
+		else
+		{
 			break;
 		}
 	} while (true);
@@ -187,41 +206,48 @@ StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expr
 	cg_context.read_var(var);
 
 	// Select the loop parameters: init, limit, increment, etc.
-	int        init_n=0, limit_n=0, incr_n=0;
+	int init_n = 0, limit_n = 0, incr_n = 0;
 	eBinaryOps test_op;
 	eAssignOps incr_op = eAddAssign;
 	bound = INVALID_BOUND;
 
 	// choose a random array from must use variables, and find the dimension with shortest length
 	// JYTODO: be more aggressive?
-	if (cg_context.rw_directive) {
-		vector<const Variable*> arrays;
+	if (cg_context.rw_directive)
+	{
+		vector<const Variable *> arrays;
 		cg_context.rw_directive->find_must_use_arrays(arrays);
-		if (!arrays.empty()) {
-			const ArrayVariable* av = dynamic_cast<const ArrayVariable*>(VariableSelector::choose_ok_var(arrays));
+		if (!arrays.empty())
+		{
+			const ArrayVariable *av = dynamic_cast<const ArrayVariable *>(VariableSelector::choose_ok_var(arrays));
 			assert(av);
-			for (size_t i=0; i<av->get_dimension(); i++) {
-				if (av->get_sizes()[i] < bound) {
+			for (size_t i = 0; i < av->get_dimension(); i++)
+			{
+				if (av->get_sizes()[i] < bound)
+				{
 					bound = av->get_sizes()[i];
 				}
 			}
 		}
 	}
-	if (bound != INVALID_BOUND) {
+	if (bound != INVALID_BOUND)
+	{
 		bound = make_random_array_control(--bound, init_n, limit_n, incr_n, test_op, incr_op, var->type->is_signed());
-	} else {
+	}
+	else
+	{
 		assert(var->type);
 		make_random_loop_control(init_n, limit_n, incr_n, test_op, incr_op, var->type->is_signed());
 	}
 	ERROR_GUARD(NULL);
 
 	// Build the IR for the subparts of the loop.
-	Constant * c_init = Constant::make_int(init_n);
+	Constant *c_init = Constant::make_int(init_n);
 	ERROR_GUARD(NULL);
 
 	// if we chose control variable wisely, this should never return false
 	assert(var);
-	Lhs* lhs = new Lhs(*var);
+	Lhs *lhs = new Lhs(*var);
 	ERROR_GUARD_AND_DEL1(NULL, c_init);
 	eBinaryOps bop = StatementAssign::compound_to_binary_ops(incr_op);
 	SafeOpFlags *flags1 = SafeOpFlags::make_random_binary(var->type, var->type, var->type, sOpAssign, bop);
@@ -246,19 +272,22 @@ StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expr
 	test = new ExpressionFuncall(*invocation);
 
 	// canonize before validation
-	//const ExpressionVariable exp_var(*var);
-	//const FunctionInvocationBinary fb(eAdd, &exp_var, c_incr);
-	//const ExpressionFuncall funcall(fb);
-	Lhs *lhs1 = dynamic_cast<Lhs*>(lhs->clone());
-	//SafeOpFlags *flags2 = SafeOpFlags::make_random(sOpAssign);
+	// const ExpressionVariable exp_var(*var);
+	// const FunctionInvocationBinary fb(eAdd, &exp_var, c_incr);
+	// const ExpressionFuncall funcall(fb);
+	Lhs *lhs1 = dynamic_cast<Lhs *>(lhs->clone());
+	// SafeOpFlags *flags2 = SafeOpFlags::make_random(sOpAssign);
 	ERROR_GUARD_AND_DEL3(NULL, init, test, lhs1);
 
-	Constant * c_incr = Constant::make_int(incr_n);
+	Constant *c_incr = Constant::make_int(incr_n);
 	ERROR_GUARD_AND_DEL3(NULL, init, test, lhs1);
 
-	if (bound != INVALID_BOUND) {
+	if (bound != INVALID_BOUND)
+	{
 		incr = new StatementAssign(cg_context.get_current_block(), *lhs1, *c_incr, incr_op);
-	} else {
+	}
+	else
+	{
 		incr = StatementAssign::make_possible_compound_assign(cg_context, &(v->get_type()), *lhs1, incr_op, *c_incr);
 	}
 	return var;
@@ -270,25 +299,25 @@ StatementFor::make_iteration(CGContext& cg_context, StatementAssign*& init, Expr
 StatementFor *
 StatementFor::make_random(CGContext &cg_context)
 {
-	FactMgr* fm = get_fact_mgr(&cg_context);
+	FactMgr *fm = get_fact_mgr(&cg_context);
 	assert(fm);
 	cg_context.get_effect_stm().clear();
 
-	StatementAssign* init = NULL;
-	StatementAssign* incr = NULL;
-	Expression* test = NULL;
+	StatementAssign *init = NULL;
+	StatementAssign *incr = NULL;
+	Expression *test = NULL;
 	unsigned int bound = 0;
-	const Variable* iv = make_iteration(cg_context, init, test, incr, bound);
+	const Variable *iv = make_iteration(cg_context, init, test, incr, bound);
 	// record the effect and facts before loop body
 	Effect pre_effects = cg_context.get_effect_stm();
-	vector<const Fact*> pre_facts = fm->global_facts;
+	vector<const Fact *> pre_facts = fm->global_facts;
 
 	// create CGContext for body
 	CGContext body_cg_context(cg_context, cg_context.rw_directive, iv, bound);
 	Block *body = Block::make_random(body_cg_context, true);
 	ERROR_GUARD_AND_DEL3(NULL, init, test, incr);
 
-	StatementFor* sf = new StatementFor(cg_context.get_current_block(), *init, *test, *incr, *body);
+	StatementFor *sf = new StatementFor(cg_context.get_current_block(), *init, *test, *incr, *body);
 	sf->post_loop_analysis(cg_context, pre_facts, pre_effects);
 	return sf;
 }
@@ -301,49 +330,56 @@ StatementFor::make_random_array_loop(const CGContext &cg_context)
 	unsigned int aryno = rnd_upto(CGOptions::max_array_num_in_loop());
 	// choose arrays to manipulate, create new ones if necessary
 	VariableSet must_reads, must_writes;
-	for (size_t i=0; i<aryno; i++) {
-		const ArrayVariable* av = VariableSelector::select_array(cg_context);
+	for (size_t i = 0; i < aryno; i++)
+	{
+		const ArrayVariable *av = VariableSelector::select_array(cg_context);
 		// random access choice: 0 = must read, 1 = must write, 2 = both
 		int access = rnd_upto(3);
-		if (access == 0 || access == 2) {
-			add_variable_to_set(must_reads, (const Variable*)av);
+		if (access == 0 || access == 2)
+		{
+			add_variable_to_set(must_reads, (const Variable *)av);
 		}
-		if (access == 1 || access == 2) {
-			add_variable_to_set(must_writes, (const Variable*)av);
+		if (access == 1 || access == 2)
+		{
+			add_variable_to_set(must_writes, (const Variable *)av);
 		}
 	}
 	// create read/write directive from existing context and incoming directives
 	VariableSet all_must_reads, all_must_writes, no_reads, no_writes;
-	if (cg_context.rw_directive) {
+	if (cg_context.rw_directive)
+	{
 		combine_variable_sets(cg_context.rw_directive->must_read_vars, must_reads, all_must_reads);
 		combine_variable_sets(cg_context.rw_directive->must_write_vars, must_writes, all_must_writes);
 		no_reads = cg_context.rw_directive->no_read_vars;
 		no_writes = cg_context.rw_directive->no_write_vars;
-	} else {
+	}
+	else
+	{
 		all_must_reads = must_reads;
 		all_must_writes = must_writes;
 	}
 	RWDirective rwd(no_reads, no_writes, all_must_reads, all_must_writes);
 	// create CGContext for loop
 	CGContext loop_cg_context(cg_context, &rwd, NULL, 0);
-	StatementFor* sf = make_random(loop_cg_context);
+	StatementFor *sf = make_random(loop_cg_context);
 	return sf;
 }
 
-void
-StatementFor::post_loop_analysis(CGContext& cg_context, vector<const Fact*>& pre_facts, Effect& pre_effect)
+void StatementFor::post_loop_analysis(CGContext &cg_context, vector<const Fact *> &pre_facts, Effect &pre_effect)
 {
-	FactMgr* fm = get_fact_mgr(&cg_context);
+	FactMgr *fm = get_fact_mgr(&cg_context);
 	assert(fm);
 	// if the control reached the end of this for-loop with must-return body, it means
 	// the loop is never entered. restore facts to pre-loop env
 	fm->global_facts = fm->map_facts_in[&body];
-	if (body.must_return()) {
+	if (body.must_return())
+	{
 		fm->restore_facts(pre_facts);
 	}
 	// add forward edges introduced by "break"
-	for (size_t i=0; i<body.break_stms.size(); i++) {
-		const StatementBreak* stm = dynamic_cast<const StatementBreak*>(body.break_stms[i]);
+	for (size_t i = 0; i < body.break_stms.size(); i++)
+	{
+		const StatementBreak *stm = dynamic_cast<const StatementBreak *>(body.break_stms[i]);
 		fm->create_cfg_edge(stm, this, true, false);
 		FactMgr::merge_jump_facts(fm->global_facts, fm->map_facts_out[stm]);
 	}
@@ -354,7 +390,7 @@ StatementFor::post_loop_analysis(CGContext& cg_context, vector<const Fact*>& pre
 /*
  *
  */
-StatementFor::StatementFor(Block* b, const StatementAssign &init,
+StatementFor::StatementFor(Block *b, const StatementAssign &init,
 						   const Expression &test,
 						   const StatementAssign &incr,
 						   const Block &body)
@@ -393,68 +429,74 @@ StatementFor::~StatementFor(void)
 	delete &body;
 }
 
-void
-StatementFor::output_header(std::ostream& out, int indent) const
+void StatementFor::output_header(std::ostream &out, int indent) const
 {
 	output_tab(out, indent);
-	out << "for (";
+	// out << "for (";
 	init.OutputAsExpr(out);
 	out << "; ";
-	test.Output(out);
-	out << "; ";
-	incr.OutputAsExpr(out);
-	out << ")";
+	out << "while ";
+	test.Output(out); // `test has paran
+	out << "";
+	// out << ")";
 	outputln(out);
 }
 
 /*
  *
  */
-void
-StatementFor::Output(std::ostream &out, FactMgr* fm, int indent) const
+void StatementFor::Output(std::ostream &out, FactMgr *fm, int indent) const
 {
 	output_header(out, indent);
+	out << "{";
 	body.Output(out, fm, indent);
+	incr.OutputAsExpr(out);
+	out << ";}";
 }
 
-bool
-StatementFor::visit_facts(vector<const Fact*>& inputs, CGContext& cg_context) const
+bool StatementFor::visit_facts(vector<const Fact *> &inputs, CGContext &cg_context) const
 {
 	// walk the initializing statement
-	if (!init.visit_facts(inputs, cg_context)) {
+	if (!init.visit_facts(inputs, cg_context))
+	{
 		return log_analysis_fail("StatementFor init");
 	}
-	//print_facts(inputs);
+	// print_facts(inputs);
 	FactVec facts_copy = inputs;
 	Effect eff = cg_context.get_effect_stm();
 
-	const Variable* iv = init.get_lhs()->get_var();
+	const Variable *iv = init.get_lhs()->get_var();
 	// the indction variable should be scalar, and shouldn't be the IV of an outer loop
 	assert(iv->type->eType == eSimple);
 	assert(cg_context.iv_bounds.find(iv) == cg_context.iv_bounds.end());
 	// give an arbitrary bound that we don't check against
 	cg_context.iv_bounds[iv] = 0;
 
-	if (!body.visit_facts(inputs, cg_context)) {
+	if (!body.visit_facts(inputs, cg_context))
+	{
 		// remove IV from context
 		cg_context.iv_bounds.erase(iv);
 		return log_analysis_fail("StatementFor loop body");
 	}
-	FactMgr* fm = get_fact_mgr(&cg_context);
+	FactMgr *fm = get_fact_mgr(&cg_context);
 	// if body must return, means the control reached end of for-loop with pre-loop env
-	if (body.must_return()) {
+	if (body.must_return())
+	{
 		inputs = facts_copy;
-	} else {
+	}
+	else
+	{
 		inputs = fm->map_facts_in[&body];
 	}
 
 	// include the facts from "break" statements
 	// find edges leading to the end of this statement, and merge
 	size_t i;
-	vector<const CFGEdge*> edges;
+	vector<const CFGEdge *> edges;
 	find_edges_in(edges, true, false);
-	for (i=0; i<edges.size(); i++) {
-		const Statement* src = edges[i]->src;
+	for (i = 0; i < edges.size(); i++)
+	{
+		const Statement *src = edges[i]->src;
 		FactMgr::merge_jump_facts(inputs, fm->map_facts_out[src]);
 	}
 	// compute accumulated effect

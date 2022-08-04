@@ -28,7 +28,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 
 #if HAVE_CONFIG_H
-#  include <config.h>
+#include <config.h>
 #endif
 
 #include "StatementAssign.h"
@@ -67,40 +67,43 @@ using namespace std;
 // Must initialize it before use
 DistributionTable StatementAssign::assignOpsTable_;
 
-void
-StatementAssign::InitProbabilityTable()
+void StatementAssign::InitProbabilityTable()
 {
 	assignOpsTable_.add_entry((int)eSimpleAssign, 70);
 	assignOpsTable_.add_entry((int)eBitAndAssign, 10);
 	assignOpsTable_.add_entry((int)eBitXorAssign, 10);
-	assignOpsTable_.add_entry((int)eBitOrAssign,  10);
+	assignOpsTable_.add_entry((int)eBitOrAssign, 10);
 	if (CGOptions::pre_incr_operator())
 		assignOpsTable_.add_entry((int)ePreIncr, 5);
 	if (CGOptions::pre_decr_operator())
 		assignOpsTable_.add_entry((int)ePreDecr, 5);
 	if (CGOptions::post_incr_operator())
 		assignOpsTable_.add_entry((int)ePostIncr, 5);
-	if (CGOptions::post_decr_operator()) {
+	if (CGOptions::post_decr_operator())
+	{
 		assignOpsTable_.add_entry((int)ePostDecr, 5);
 	}
 }
 
 eAssignOps
-StatementAssign::AssignOpsProbability(const Type* type)
+StatementAssign::AssignOpsProbability(const Type *type)
 {
-	if (!CGOptions::compound_assignment()) {
+	if (!CGOptions::compound_assignment())
+	{
 		return eSimpleAssign;
 	}
 	// First, floating point values do not apply to |=, &= and ^=.
 	// Second, similar to signed integers, we don't generate pre- or post-
 	// operators for floating point values. Instead, we will wrap all
 	// of these operations into safe_float_math later.
-	if (type && (type->eType != eSimple || type->get_base_type()->is_float())) {
+	if (type && (type->eType != eSimple || type->get_base_type()->is_float()))
+	{
 		return eSimpleAssign;
 	}
 
 	VectorFilter filter(&assignOpsTable_);
-	if (type && type->is_signed()) {
+	if (type && type->is_signed())
+	{
 		filter.add(ePreIncr).add(ePreDecr).add(ePostIncr).add(ePostDecr);
 	}
 
@@ -112,20 +115,21 @@ StatementAssign::AssignOpsProbability(const Type* type)
  *
  */
 StatementAssign *
-StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQualifiers* qf)
+StatementAssign::make_random(CGContext &cg_context, const Type *type, const CVQualifiers *qf)
 {
 	// decide assignment operator
 	eAssignOps op = AssignOpsProbability(type);
 	// bool stand_alone_assign = false;
 
 	// decide type
-	if (type == NULL) {
+	if (type == NULL)
+	{
 		// stand_alone_assign = true;
 		type = Type::SelectLType(!cg_context.get_effect_context().is_side_effect_free(), op);
 	}
 	assert(!type->is_const_struct_union());
 
-	FactMgr* fm = get_fact_mgr(&cg_context);
+	FactMgr *fm = get_fact_mgr(&cg_context);
 	assert(fm);
 	// pre-generation initializations
 	Lhs *lhs = NULL;
@@ -134,27 +138,33 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 	Effect rhs_accum, lhs_accum;
 	CGContext rhs_cg_context(cg_context, running_eff_context, &rhs_accum);
 	CVQualifiers qfer;
-	if (qf) qfer = *qf;
+	if (qf)
+		qfer = *qf;
 
-	if (need_no_rhs(op)) {
+	if (need_no_rhs(op))
+	{
 		e = Constant::make_int(1);
 		// if we are creating standalone statements like x++, any qualifers fit
-		if (qf == NULL) qfer.wildcard = true;
+		if (qf == NULL)
+			qfer.wildcard = true;
 	}
-	else if (CGOptions::strict_volatile_rule()) {
+	else if (CGOptions::strict_volatile_rule())
+	{
 		if (type->is_volatile_struct_union())
 			return NULL;
 
 		e = Expression::make_random(rhs_cg_context, type, qf);
 		ERROR_GUARD_AND_DEL1(NULL, e);
-		if (!qf) {
+		if (!qf)
+		{
 			qfer = e->get_qualifiers();
 			// lhs should not has "const" qualifier
 			qfer.accept_stricter = true;
 		}
 
 		// for compound assignment, generate LHS in the effect context of RHS
-		if (op != eSimpleAssign) {
+		if (op != eSimpleAssign)
+		{
 			running_eff_context.add_effect(rhs_accum);
 			// for now, just use non-volatile as LHS for compound assignments
 			qfer.set_volatile(false);
@@ -165,17 +175,20 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 		if (qfer.get_volatiles().size() && qfer.is_volatile())
 			qfer.set_volatile(false);
 	}
-	else {
+	else
+	{
 		e = Expression::make_random(rhs_cg_context, type, qf);
 		ERROR_GUARD_AND_DEL1(NULL, e);
-		if (!qf) {
+		if (!qf)
+		{
 			qfer = e->get_qualifiers();
 			// lhs should not has "const" qualifier
 			qfer.accept_stricter = true;
 		}
 
 		// for compound assignment, generate LHS in the effect context of RHS
-		if (op != eSimpleAssign) {
+		if (op != eSimpleAssign)
+		{
 			running_eff_context.add_effect(rhs_accum);
 			// for now, just use non-volatile as LHS for compound assignments
 			qfer.set_volatile(false);
@@ -189,29 +202,35 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 	lhs_cg_context.curr_rhs = e;
 
 	bool prev_flag = CGOptions::match_exact_qualifiers(); // keep a copy of previous flag
-	if (qf) CGOptions::match_exact_qualifiers(true);      // force exact qualifier match when selecting vars
-	if (CGOptions::strict_float()) {
+	if (qf)
+		CGOptions::match_exact_qualifiers(true); // force exact qualifier match when selecting vars
+	if (CGOptions::strict_float())
+	{
 		lhs = Lhs::make_random(lhs_cg_context, &e->get_type(), &qfer, op != eSimpleAssign, need_no_rhs(op));
 	}
-	else {
+	else
+	{
 		lhs = Lhs::make_random(lhs_cg_context, type, &qfer, op != eSimpleAssign, need_no_rhs(op));
 	}
 
-	if (qf) CGOptions::match_exact_qualifiers(prev_flag); // restore flag
+	if (qf)
+		CGOptions::match_exact_qualifiers(prev_flag); // restore flag
 	ERROR_GUARD_AND_DEL2(NULL, e, lhs);
 
 	// typecast, if needed.
 	e->check_and_set_cast(type);
-	if (CGOptions::ccomp() && lhs->get_var()->isBitfield_) {
+	if (CGOptions::ccomp() && lhs->get_var()->isBitfield_)
+	{
 		e->cast_type = type;
 	}
 	// e can be of float type. So, we reset its
-	if ((lhs->get_var()->type->get_base_type()->is_float() || e->get_type().get_base_type()->is_float())
-	    && !StatementAssign::AssignOpWorksForFloat(op)) {
+	if ((lhs->get_var()->type->get_base_type()->is_float() || e->get_type().get_base_type()->is_float()) && !StatementAssign::AssignOpWorksForFloat(op))
+	{
 		op = eSimpleAssign;
 	}
 
-	if (CompatibleChecker::compatible_check(e, lhs)) {
+	if (CompatibleChecker::compatible_check(e, lhs))
+	{
 		Error::set_error(COMPATIBLE_CHECK_ERROR);
 		delete e;
 		delete lhs;
@@ -225,10 +244,10 @@ StatementAssign::make_random(CGContext &cg_context, const Type* type, const CVQu
 	return stmt_assign;
 }
 
-bool
-StatementAssign::safe_assign(eAssignOps op)
+bool StatementAssign::safe_assign(eAssignOps op)
 {
-	switch (op) {
+	switch (op)
+	{
 	case eBitAndAssign: // fall-through
 	case eBitXorAssign: // fall-through
 	case eBitOrAssign:
@@ -240,10 +259,10 @@ StatementAssign::safe_assign(eAssignOps op)
 
 StatementAssign *
 StatementAssign::make_possible_compound_assign(CGContext &cg_context,
-				 const Type *type,
-				 const Lhs &l,
-				 eAssignOps op,
-				 const Expression &e)
+											   const Type *type,
+											   const Lhs &l,
+											   eAssignOps op,
+											   const Expression &e)
 {
 	eBinaryOps bop = compound_to_binary_ops(op);
 	const Expression *rhs = NULL;
@@ -251,26 +270,30 @@ StatementAssign::make_possible_compound_assign(CGContext &cg_context,
 	std::string tmp1;
 	std::string tmp2;
 
-	if (bop != MAX_BINARY_OP) {
-		SafeOpFlags *local_fs  = NULL;
-		FunctionInvocation* fi = NULL;
-		if (safe_assign(op)) {
+	if (bop != MAX_BINARY_OP)
+	{
+		SafeOpFlags *local_fs = NULL;
+		FunctionInvocation *fi = NULL;
+		if (safe_assign(op))
+		{
 			local_fs = SafeOpFlags::make_dummy_flags();
 			fi = new FunctionInvocationBinary(bop, local_fs);
 		}
-		else {
+		else
+		{
 			local_fs = SafeOpFlags::make_random_binary(type, &(l.get_type()), &(l.get_type()), sOpAssign, bop);
 			ERROR_GUARD(NULL);
 			fi = FunctionInvocationBinary::CreateFunctionInvocationBinary(cg_context, bop, local_fs);
-			tmp1 = dynamic_cast<FunctionInvocationBinary*>(fi)->get_tmp_var1();
-			tmp2 = dynamic_cast<FunctionInvocationBinary*>(fi)->get_tmp_var2();
+			tmp1 = dynamic_cast<FunctionInvocationBinary *>(fi)->get_tmp_var1();
+			tmp2 = dynamic_cast<FunctionInvocationBinary *>(fi)->get_tmp_var2();
 		}
 		fs = local_fs->clone();
-        	fi->add_operand(new ExpressionVariable(*(l.get_var()), &l.get_type()));
-        	fi->add_operand(e.clone());
-        	rhs = new ExpressionFuncall(*fi);
-        }
-	else {
+		fi->add_operand(new ExpressionVariable(*(l.get_var()), &l.get_type()));
+		fi->add_operand(e.clone());
+		rhs = new ExpressionFuncall(*fi);
+	}
+	else
+	{
 		rhs = &e;
 #if 0
 		if (e.term_type == eFunction) {
@@ -281,7 +304,8 @@ StatementAssign::make_possible_compound_assign(CGContext &cg_context,
 			}
 		}
 #endif
-		if (op != eSimpleAssign) {
+		if (op != eSimpleAssign)
+		{
 			fs = SafeOpFlags::make_random_binary(type, &(l.get_type()), &(rhs->get_type()), sOpAssign, bop);
 			bool op1 = fs->get_op1_sign();
 			bool op2 = fs->get_op2_sign();
@@ -308,41 +332,72 @@ StatementAssign::compound_to_binary_ops(eAssignOps op)
 	eBinaryOps bop = MAX_BINARY_OP;
 	switch (op)
 	{
-	case eAddAssign: bop = eAdd; break;
-	case eSubAssign: bop = eSub; break;
-	case eMulAssign: bop = eMul; break;
-	case eDivAssign: bop = eDiv; break;
-	case eRemAssign: bop = eMod; break;
-	case eBitAndAssign:	bop = eBitAnd; break;
-	case eBitXorAssign:	bop = eBitXor; break;
-	case eBitOrAssign:  bop = eBitOr; break;
-	case ePreDecr:   bop = eSub; break;
-	case ePostDecr:  bop = eSub; break;
-	case ePreIncr:   bop = eAdd; break;
-	case ePostIncr:  bop = eAdd; break;
-	case eLShiftAssign: bop = eLShift; break;
-	case eRShiftAssign: bop = eRShift; break;
-	default: bop = MAX_BINARY_OP; break;
+	case eAddAssign:
+		bop = eAdd;
+		break;
+	case eSubAssign:
+		bop = eSub;
+		break;
+	case eMulAssign:
+		bop = eMul;
+		break;
+	case eDivAssign:
+		bop = eDiv;
+		break;
+	case eRemAssign:
+		bop = eMod;
+		break;
+	// case eBitAndAssign:
+	// 	bop = eBitAnd;
+	// 	break;
+	// case eBitXorAssign:
+	// 	bop = eBitXor;
+	// 	break;
+	// case eBitOrAssign:
+	// 	bop = eBitOr;
+	// 	break;
+	case ePreDecr:
+		bop = eSub;
+		break;
+	case ePostDecr:
+		bop = eSub;
+		break;
+	case ePreIncr:
+		bop = eAdd;
+		break;
+	case ePostIncr:
+		bop = eAdd;
+		break;
+	// case eLShiftAssign:
+	// 	bop = eLShift;
+	// 	break;
+	// case eRShiftAssign:
+	// 	bop = eRShift;
+	// 	break;
+	default:
+		bop = MAX_BINARY_OP;
+		break;
 	}
 	return bop;
 }
 
-bool
-StatementAssign::visit_facts(vector<const Fact*>& inputs, CGContext& cg_context) const
+bool StatementAssign::visit_facts(vector<const Fact *> &inputs, CGContext &cg_context) const
 {
-	vector<const Fact*> inputs_copy = inputs;
+	vector<const Fact *> inputs_copy = inputs;
 	// LHS and RHS can be evaludated in arbitrary order, try RHS first
 	Effect running_eff_context(cg_context.get_effect_context());
 	Effect rhs_accum, lhs_accum;
 	CGContext rhs_cg_context(cg_context, running_eff_context, &rhs_accum);
-	if (!expr.visit_facts(inputs, rhs_cg_context)) {
+	if (!expr.visit_facts(inputs, rhs_cg_context))
+	{
 		return log_analysis_fail("StatementAssign rhs");
 	}
 
 	// for compound assignment, LHS needs to be evaluated in the effect context of RHS
 	// Yang: do we also need to consider strict_volatile_rule here?
 	// if ((op != eSimpleAssign) || (CGOptions::strict_volatile_rule())) {
-	if (op != eSimpleAssign) {
+	if (op != eSimpleAssign)
+	{
 		running_eff_context.add_effect(rhs_accum);
 	}
 	cg_context.merge_param_context(rhs_cg_context, true);
@@ -351,26 +406,26 @@ StatementAssign::visit_facts(vector<const Fact*>& inputs, CGContext& cg_context)
 	CGContext lhs_cg_context(cg_context, running_eff_context, &lhs_accum);
 	lhs_cg_context.get_effect_stm() = rhs_cg_context.get_effect_stm();
 	lhs_cg_context.curr_rhs = &expr;
-	if (!lhs.visit_facts(inputs, lhs_cg_context)) {
+	if (!lhs.visit_facts(inputs, lhs_cg_context))
+	{
 		return log_analysis_fail("StatementAssign lhs");
 	}
 	cg_context.merge_param_context(lhs_cg_context, true);
-	//cg_context.get_effect_stm() = lhs_cg_context.get_effect_stm();
+	// cg_context.get_effect_stm() = lhs_cg_context.get_effect_stm();
 	FactMgr::update_fact_for_assign(this, inputs);
 	// save effect
-	FactMgr* fm = get_fact_mgr(&cg_context);
+	FactMgr *fm = get_fact_mgr(&cg_context);
 	fm->map_stm_effect[this] = cg_context.get_effect_stm();
 	return true;
 }
 
-std::vector<const ExpressionVariable*>
+std::vector<const ExpressionVariable *>
 StatementAssign::get_dereferenced_ptrs(void) const
 {
 	return expr.get_dereferenced_ptrs();
 }
 
-bool
-StatementAssign::has_uncertain_call_recursive(void) const
+bool StatementAssign::has_uncertain_call_recursive(void) const
 {
 	return expr.has_uncertain_call_recursive();
 }
@@ -378,10 +433,10 @@ StatementAssign::has_uncertain_call_recursive(void) const
 /*
  *
  */
-StatementAssign::StatementAssign(Block* b, const Lhs &l,
-				 const Expression &e,
-				 eAssignOps op,
-				 const SafeOpFlags *flags)
+StatementAssign::StatementAssign(Block *b, const Lhs &l,
+								 const Expression &e,
+								 eAssignOps op,
+								 const SafeOpFlags *flags)
 	: Statement(eAssign, b),
 	  op(op),
 	  lhs(l),
@@ -395,13 +450,13 @@ StatementAssign::StatementAssign(Block* b, const Lhs &l,
 /*
  *
  */
-StatementAssign::StatementAssign(Block* b, const Lhs &l,
-				 eAssignOps op,
-				 const Expression &e,
-				 const Expression *er,
-				 const SafeOpFlags *flags,
-				 std::string &tmp_name1,
-				 std::string &tmp_name2)
+StatementAssign::StatementAssign(Block *b, const Lhs &l,
+								 eAssignOps op,
+								 const Expression &e,
+								 const Expression *er,
+								 const SafeOpFlags *flags,
+								 std::string &tmp_name1,
+								 std::string &tmp_name2)
 	: Statement(eAssign, b),
 	  op(op),
 	  lhs(l),
@@ -433,7 +488,8 @@ StatementAssign::StatementAssign(const StatementAssign &sa)
  */
 StatementAssign::~StatementAssign(void)
 {
-	if (rhs != &expr) {
+	if (rhs != &expr)
+	{
 		delete rhs;
 	}
 	delete &lhs;
@@ -445,34 +501,63 @@ StatementAssign::~StatementAssign(void)
 /*
  * output assign operator
  */
-void
-StatementAssign::output_op(std::ostream &out) const
+void StatementAssign::output_op(std::ostream &out) const
 {
-	switch (op) {
-	case eSimpleAssign: out << "="; break;
-	case eMulAssign:	out << "*="; break;
-	case eDivAssign:	out << "/="; break;
-	case eRemAssign:	out << "%="; break;
-	case eAddAssign:	out << "+="; break;
-	case eSubAssign:	out << "-="; break;
-	case eLShiftAssign:	out << "<<="; break;
-	case eRShiftAssign:	out << ">>="; break;
-	case eBitAndAssign:	out << "&="; break;
-	case eBitXorAssign:	out << "^="; break;
-	case eBitOrAssign:	out << "|="; break;
+	switch (op)
+	{
+	case eSimpleAssign:
+		out << "=";
+		break;
+	case eMulAssign:
+		out << "*=";
+		break;
+	case eDivAssign:
+		out << "/=";
+		break;
+	case eRemAssign:
+		out << "%=";
+		break;
+	case eAddAssign:
+		out << "+=";
+		break;
+	case eSubAssign:
+		out << "-=";
+		break;
+	case eLShiftAssign:
+		out << "<<=";
+		break;
+	case eRShiftAssign:
+		out << ">>=";
+		break;
+	case eBitAndAssign:
+		out << "&=";
+		break;
+	case eBitXorAssign:
+		out << "^=";
+		break;
+	case eBitOrAssign:
+		out << "|=";
+		break;
 
-	case ePreIncr:		out << "++"; break;
-	case ePreDecr:		out << "--"; break;
-	case ePostIncr:		out << "++"; break;
-	case ePostDecr:		out << "--"; break;
+	case ePreIncr:
+		out << "++";
+		break;
+	case ePreDecr:
+		out << "--";
+		break;
+	case ePostIncr:
+		out << "++";
+		break;
+	case ePostDecr:
+		out << "--";
+		break;
 	}
 }
 
 /*
  *
  */
-void
-StatementAssign::Output(std::ostream &out, FactMgr* /*fm*/, int indent) const
+void StatementAssign::Output(std::ostream &out, FactMgr * /*fm*/, int indent) const
 {
 	output_tab(out, indent);
 	OutputAsExpr(out);
@@ -480,14 +565,22 @@ StatementAssign::Output(std::ostream &out, FactMgr* /*fm*/, int indent) const
 	outputln(out);
 }
 
-void
-StatementAssign::OutputSimple(std::ostream &out) const
+void StatementAssign::OutputSimple(std::ostream &out) const
 {
-	switch (op) {
+	switch (op)
+	{
 	default:
 		lhs.Output(out);
 		out << " ";
-		output_op(out);
+		// if (op == eAddAssign or op == eSubAssign)
+		if (op == eSimpleAssign)
+			output_op(out);
+		else
+		{
+			out << " = ";
+			lhs.Output(out);
+			out << ((op == eAddAssign) ? " + " : " - ");
+		}
 		out << " ";
 		expr.Output(out);
 		break;
@@ -509,11 +602,12 @@ StatementAssign::OutputSimple(std::ostream &out) const
 /*
  *
  */
-void
-StatementAssign::OutputAsExpr(std::ostream &out) const
+void StatementAssign::OutputAsExpr(std::ostream &out) const
 {
-	if (CGOptions::avoid_signed_overflow() && op_flags) {
-		switch (op) {
+	if (CGOptions::avoid_signed_overflow() && op_flags)
+	{
+		switch (op)
+		{
 
 		case eSimpleAssign:
 		case eBitAndAssign:
@@ -523,13 +617,16 @@ StatementAssign::OutputAsExpr(std::ostream &out) const
 			eBinaryOps bop = compound_to_binary_ops(op);
 			lhs.Output(out);
 			out << " ";
-			if (CGOptions::ccomp() && (bop != MAX_BINARY_OP) && (lhs.is_volatile())) {
-				out << "=" << " ";
+			if (CGOptions::ccomp() && (bop != MAX_BINARY_OP) && (lhs.is_volatile()))
+			{
+				out << "="
+					<< " ";
 				lhs.Output(out);
 				out << " " << FunctionInvocationBinary::get_binop_string(bop) << " ";
 				expr.Output(out);
 			}
-			else {
+			else
+			{
 				output_op(out);
 				out << " ";
 				expr.Output(out);
@@ -538,76 +635,89 @@ StatementAssign::OutputAsExpr(std::ostream &out) const
 		}
 
 		case ePreIncr:
-			out << "++"; lhs.Output(out);
+			out << "++";
+			lhs.Output(out);
 			break;
 		case ePreDecr:
-			out << "--"; lhs.Output(out);
+			out << "--";
+			lhs.Output(out);
 			break;
 		case ePostIncr:
-			lhs.Output(out); out << "++";
+			lhs.Output(out);
+			out << "++";
 			break;
-		case ePostDecr:	lhs.Output(out);
+		case ePostDecr:
+			lhs.Output(out);
 			out << "--";
 			break;
 
 		case eAddAssign:
 		case eSubAssign:
+		{
+			enum eBinaryOps bop = compound_to_binary_ops(op);
+			assert(op_flags);
+			string fname = op_flags->to_string(bop);
+			int id = SafeOpFlags::to_id(fname);
+			// don't use safe math wrapper if this function is specified in "--safe-math-wrapper"
+			if (!CGOptions::safe_math_wrapper(id))
 			{
-				enum eBinaryOps bop = compound_to_binary_ops(op);
-				assert(op_flags);
-				string fname = op_flags->to_string(bop);
-				int id = SafeOpFlags::to_id(fname);
-				// don't use safe math wrapper if this function is specified in "--safe-math-wrapper"
-				if (!CGOptions::safe_math_wrapper(id)) {
-					OutputSimple(out);
-					return;
-				}
-				lhs.Output(out);
-				out << " = " << fname << "(";
-				if (CGOptions::math_notmp()) {
-					out << tmp_var1 << ", ";
-				}
-
-				lhs.Output(out);
-				out << ", ";
-				if (CGOptions::math_notmp()) {
-					out << tmp_var2 << ", ";
-				}
-
-				if (op == eAddAssign ||
-					op == eSubAssign) {
-					expr.Output(out);
-				} else {
-					out << (CGOptions::mark_mutable_const() ? "(1)" : "1");
-				}
-				if (CGOptions::identify_wrappers()) {
-					out << ", " << id;
-				}
-				out << ")";
+				OutputSimple(out);
+				return;
 			}
-			break;
+			lhs.Output(out);
+			out << " = " << fname << "(";
+			if (CGOptions::math_notmp())
+			{
+				out << tmp_var1 << ", ";
+			}
+
+			lhs.Output(out);
+			out << ", ";
+			if (CGOptions::math_notmp())
+			{
+				out << tmp_var2 << ", ";
+			}
+
+			if (op == eAddAssign ||
+				op == eSubAssign)
+			{
+				expr.Output(out);
+			}
+			else
+			{
+				out << (CGOptions::mark_mutable_const() ? "(1)" : "1");
+			}
+			if (CGOptions::identify_wrappers())
+			{
+				out << ", " << id;
+			}
+			out << ")";
+		}
+		break;
 
 		default:
 			assert(false);
 			break;
 		}
-	} else {
+	}
+	else
+	{
 		OutputSimple(out);
 	}
 }
 
-bool
-StatementAssign::AssignOpWorksForFloat(eAssignOps op)
+bool StatementAssign::AssignOpWorksForFloat(eAssignOps op)
 {
-	switch (op) {
-		case eSimpleAssign:
-		case eMulAssign:
-		case eDivAssign:
-		case eAddAssign:
-		case eSubAssign:
-			return true;
-		default:
-			return false;
+	switch (op)
+	{
+	case eSimpleAssign:
+	case eMulAssign:
+	case eDivAssign:
+	case eAddAssign:
+	case eSubAssign:
+		return true;
+	default:
+		return false;
 	}
 }
 

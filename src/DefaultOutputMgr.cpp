@@ -147,13 +147,13 @@ DefaultOutputMgr::OutputAllHeaders()
 	*outs[0] << "#include \"" << global_header << ".h\"" << std::endl;
 
 	vector<ofstream *>::iterator j;
-	for (j = outs.begin(); j != outs.end(); ++j) {
-		ofstream *out = (*j);
-		string prefix = "extern ";
-		// OutputGlobalVariablesDecls(*out, prefix);
-		OutputForwardDeclarations(*out);
-		*out << std::endl;
-	}
+	// for (j = outs.begin(); j != outs.end(); ++j) {
+	// 	ofstream *out = (*j);
+	// 	string prefix = "extern ";
+	// 	// OutputGlobalVariablesDecls(*out, prefix);
+	// 	OutputForwardDeclarations(*out);
+	// 	*out << std::endl;
+	// }
 }
 
 void
@@ -208,7 +208,7 @@ DefaultOutputMgr::Output()
 	else {
 		OutputStructUnionDeclarations(out);
 		OutputGlobalVariables(out);
-		OutputForwardDeclarations(out);
+		// OutputForwardDeclarations(out);
 		OutputFunctions(out);
 	}
 	if (CGOptions::step_hash_by_stmt()) {

@@ -242,9 +242,9 @@ void
 Expression::output_cast(std::ostream& out) const
 {
 	if((CGOptions::ccomp() || CGOptions::lang_cpp()) && (cast_type != NULL)) {
-		out << "(";
-		cast_type->Output(out);
-		out << ") ";
+		// out << "(";
+		// cast_type->Output(out);
+		// out << ") ";
 	}
 }
 

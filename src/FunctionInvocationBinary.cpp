@@ -72,7 +72,7 @@ FunctionInvocationBinary::CreateFunctionInvocationBinary(CGContext &cg_context,
 
 		std::string tmp_var1 = blk->create_new_tmp_var(type1);
 		std::string tmp_var2;
-		if (op == eLShift || op == eRShift)
+		if (false) // op == eLShift || op == eRShift)
 			tmp_var2 = blk->create_new_tmp_var(type2);
 		else
 			tmp_var2 = blk->create_new_tmp_var(type1);
@@ -156,8 +156,8 @@ FunctionInvocationBinary::safe_ops(eBinaryOps op)
 	case eMul:
 	case eMod:
 	case eDiv:
-	case eLShift:
-	case eRShift:
+	// case eLShift:
+	// case eRShift:
 		return true;
 	default:
 		return false;
@@ -171,13 +171,13 @@ FunctionInvocationBinary::equals(int num) const
 	assert(param_value.size() == 2);
 	if (num == 0) {
 		if (param_value[0]->equals(0) &&
-			(eFunc==eMul || eFunc==eDiv || eFunc==eMod || eFunc==eLShift || eFunc==eRShift || eFunc==eAnd || eFunc==eBitAnd)) {
+			(eFunc==eMul || eFunc==eDiv || eFunc==eMod)) { //  || eFunc==eLShift || eFunc==eRShift || eFunc==eAnd || eFunc==eBitAnd)) {
 			return true;
 		}
-		if (param_value[1]->equals(0) && (eFunc==eMul || eFunc==eAnd || eFunc==eBitAnd)) {
+		if (param_value[1]->equals(0) && (eFunc==eMul)) { // || eFunc==eAnd || eFunc==eBitAnd)) {
 			return true;
 		}
-		if (param_value[0] == param_value[1] && (eFunc==eSub || eFunc==eCmpGt || eFunc==eCmpLt || eFunc==eCmpNe)) {
+		if (param_value[0] == param_value[1] && (eFunc==eSub)) { // || eFunc==eCmpGt || eFunc==eCmpLt || eFunc==eCmpNe)) {
 			return true;
 		}
 		if ((param_value[1]->equals(1) || param_value[1]->equals(-1)) && eFunc==eMod) {
@@ -190,7 +190,7 @@ FunctionInvocationBinary::equals(int num) const
 bool
 FunctionInvocationBinary::is_0_or_1(void) const
 {
-	return eFunc==eCmpGt || eFunc==eCmpLt || eFunc==eCmpGe || eFunc==eCmpLe || eFunc==eCmpEq || eFunc==eCmpNe;
+	return false ; // eFunc==eCmpGt || eFunc==eCmpLt || eFunc==eCmpGe || eFunc==eCmpLe || eFunc==eCmpEq || eFunc==eCmpNe;
 }
 
 bool
@@ -218,9 +218,9 @@ FunctionInvocationBinary::get_type(void) const
 	case eMul:
 	case eDiv:
 	case eMod:
-	case eBitXor:
-	case eBitAnd:
-	case eBitOr:
+	// case eBitXor:
+	// case eBitAnd:
+	// case eBitOr:
 		{
 			const Type &l_type = param_value[0]->get_type();
 			const Type &r_type = param_value[1]->get_type();
@@ -233,29 +233,29 @@ FunctionInvocationBinary::get_type(void) const
 		}
 		break;
 
-	case eCmpGt:
-	case eCmpLt:
-	case eCmpGe:
-	case eCmpLe:
-	case eCmpEq:
-	case eCmpNe:
-	case eAnd:
-	case eOr:
-		return Type::get_simple_type(eInt);
-		break;
+	// case eCmpGt:
+	// case eCmpLt:
+	// case eCmpGe:
+	// case eCmpLe:
+	// case eCmpEq:
+	// case eCmpNe:
+	// case eAnd:
+	// case eOr:
+	// 	return Type::get_simple_type(eInt);
+	// 	break;
 
-	case eRShift:
-	case eLShift:
-		{
-			const Type &l_type = param_value[0]->get_type();
-			// XXX --- not really right!
-			if (l_type.is_signed()) {
-				return Type::get_simple_type(eInt);
-			} else {
-				return Type::get_simple_type(eUInt);
-			}
-		}
-		break;
+	// case eRShift:
+	// case eLShift:
+	// 	{
+	// 		const Type &l_type = param_value[0]->get_type();
+	// 		// XXX --- not really right!
+	// 		if (l_type.is_signed()) {
+	// 			return Type::get_simple_type(eInt);
+	// 		} else {
+	// 			return Type::get_simple_type(eUInt);
+	// 		}
+	// 	}
+	// 	break;
 	}
 	assert(0);
 	return Type::get_simple_type(eInt);
@@ -278,8 +278,8 @@ OutputStandardFuncName(eBinaryOps eFunc, std::ostream &out)
 	case eMod:		out << "%";     break;
 
 		// Logical Ops
-	case eAnd:		out << "&&";	break;
-	case eOr:		out << "||";	break;
+	// case eAnd:		out << "&&";	break;
+	// case eOr:		out << "||";	break;
 	case eCmpEq:	out << "==";	break;
 	case eCmpNe:	out << "!=";	break;
 	case eCmpGt:	out << ">";		break;
@@ -287,12 +287,12 @@ OutputStandardFuncName(eBinaryOps eFunc, std::ostream &out)
 	case eCmpLe:	out << "<=";	break;
 	case eCmpGe:	out << ">=";	break;
 
-		// Bitwise Ops
-	case eBitAnd:	out << "&";		break;
-	case eBitOr:	out << "|";		break;
-	case eBitXor:	out << "^";		break;
-	case eLShift:	out << "<<";    break;
-	case eRShift:	out << ">>";    break;
+	// 	// Bitwise Ops
+	// case eBitAnd:	out << "&";		break;
+	// case eBitOr:	out << "|";		break;
+	// case eBitXor:	out << "^";		break;
+	// case eLShift:	out << "<<";    break;
+	// case eRShift:	out << ">>";    break;
 	}
 }
 
@@ -307,9 +307,9 @@ FunctionInvocationBinary::get_binop_string(eBinaryOps bop)
 	case eMul: op_string = "*"; break;
 	case eDiv: op_string = "/"; break;
 	case eMod: op_string = "%"; break;
-	case eBitAnd:	op_string = "&"; break;
-	case eBitXor:	op_string = "^"; break;
-	case eBitOr:  op_string = "|"; break;
+	// case eBitAnd:	op_string = "&"; break;
+	// case eBitXor:	op_string = "^"; break;
+	// case eBitOr:  op_string = "|"; break;
 	default: assert(0); break;
 	}
 	return op_string;
@@ -339,8 +339,8 @@ FunctionInvocationBinary::Output(std::ostream &out) const
 		case eMul:
 		case eMod:
 		case eDiv:
-		case eLShift:
-		case eRShift:
+		// case eLShift:
+		// case eRShift:
 			if (CGOptions::avoid_signed_overflow()) {
 				string fname = op_flags->to_string(eFunc);
 				int id = SafeOpFlags::to_id(fname);
@@ -370,9 +370,9 @@ FunctionInvocationBinary::Output(std::ostream &out) const
 		default:
 			// explicit type casting for op1
 			if (need_cast) {
-				out << "(";
-				op_flags->OutputSize(out);
-				out << ")";
+				// out << "(";
+				// op_flags->OutputSize(out);
+				// out << ")";
 			}
 			param_value[0]->Output(out);
 			out << " ";
@@ -380,9 +380,9 @@ FunctionInvocationBinary::Output(std::ostream &out) const
 			out << " ";
 			// explicit type casting for op2
 			if (need_cast) {
-				out << "(";
-				op_flags->OutputSize(out);
-				out << ")";
+				// out << "(";
+				// op_flags->OutputSize(out);
+				// out << ")";
 			}
 			param_value[1]->Output(out);
 			break;
@@ -420,8 +420,8 @@ FunctionInvocationBinary::indented_output(std::ostream &out, int indent) const
 		case eMul:
 		case eMod:
 		case eDiv:
-		case eLShift:
-		case eRShift:
+		// case eLShift:
+		// case eRShift:
 			if (CGOptions::avoid_signed_overflow()) {
 				output_tab(out, indent);
 				out << op_flags->to_string(eFunc);

@@ -292,7 +292,7 @@ CGOptions::set_default_settings(void)
 	signed_char_index(true);
 	identify_wrappers(false);
 	mark_mutable_const(false);
-	force_globals_static(true);
+	force_globals_static(false);
 	force_non_uniform_array_init(true);
 	max_array_num_in_loop(CGOPTIONS_DEFAULT_MAX_ARRAY_NUM_IN_LOOP);
 	inline_function_prob(50);
